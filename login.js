@@ -1,4 +1,9 @@
-import { auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
+
+import {
+    doc,
+    setDoc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 import {
     createUserWithEmailAndPassword,
@@ -7,34 +12,37 @@ import {
     GoogleAuthProvider
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-console.log("app.js carregado");
-
-//login
-
 const emailInput = document.getElementById("email");
 const senhaInput = document.getElementById("senha");
 const btnLogin = document.getElementById("btnLogin");
 const btnCadastro = document.getElementById("btnCadastro");
 const btnGoogle = document.getElementById("btnGoogle");
 
+async function salvarUsuario(user) {
+    await setDoc(
+        doc(db, "users", user.uid),
+        {
+            uid: user.uid,
+            email: user.email,
+            atualizadoEm: Date.now()
+        },
+        { merge: true }
+    );
+}
+
 if (btnLogin) {
     btnLogin.addEventListener("click", async () => {
-        alert("Entrar clicado");
-
         const email = emailInput.value.trim();
         const senha = senhaInput.value.trim();
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, senha);
 
-            console.log(userCredential.user);
-
-            alert("Login feito com sucesso!");
+            await salvarUsuario(userCredential.user);
 
             window.location.href = "./dashboard.html";
 
         } catch (error) {
-            console.log(error);
             alert("Erro ao entrar: " + error.code);
         }
     });
@@ -42,22 +50,17 @@ if (btnLogin) {
 
 if (btnCadastro) {
     btnCadastro.addEventListener("click", async () => {
-        alert("Criar conta clicado");
-
         const email = emailInput.value.trim();
         const senha = senhaInput.value.trim();
 
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
 
-            console.log(userCredential.user);
-
-            alert("Conta criada com sucesso!");
+            await salvarUsuario(userCredential.user);
 
             window.location.href = "./dashboard.html";
 
         } catch (error) {
-            console.log(error);
             alert("Erro ao criar conta: " + error.code);
         }
     });
@@ -65,23 +68,17 @@ if (btnCadastro) {
 
 if (btnGoogle) {
     btnGoogle.addEventListener("click", async () => {
-        alert("Google clicado");
-
         try {
             const provider = new GoogleAuthProvider();
 
             const userCredential = await signInWithPopup(auth, provider);
 
-            console.log(userCredential.user);
+            await salvarUsuario(userCredential.user);
 
-            alert("Login Google feito com sucesso!");
-
-            window.location.href = "./dashboard.html";
+            window.location.href = "./dashboard.html?v=40";
 
         } catch (error) {
-            console.log(error);
             alert("Erro Google: " + error.code);
         }
     });
 }
-

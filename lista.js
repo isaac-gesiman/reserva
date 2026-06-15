@@ -12,19 +12,11 @@ import {
     updateDoc,
     deleteDoc,
     onSnapshot,
-    query,
-    where,
     arrayUnion,
     arrayRemove
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-
-// ==========================
-// ELEMENTOS
-// ==========================
-
-const containerListas = document.querySelector(".listas-container");
-const plusBtn = document.querySelector(".plus-btn");
+console.log("lista.js carregou");
 
 const nomeListaInput = document.getElementById("nomeLista");
 const listaItens = document.getElementById("listaItens");
@@ -35,11 +27,6 @@ const btnApagarLista = document.getElementById("btnApagarLista");
 
 const listaAtualId = localStorage.getItem("listaAtual");
 
-
-// ==========================
-// VERIFICAR USUÁRIO LOGADO
-// ==========================
-
 onAuthStateChanged(auth, (usuario) => {
 
     if (!usuario) {
@@ -47,112 +34,15 @@ onAuthStateChanged(auth, (usuario) => {
         return;
     }
 
-    if (containerListas) {
-        carregarListas(usuario);
+    if (!listaAtualId) {
+        window.location.href = "dashboard.html";
+        return;
     }
 
-    if (nomeListaInput && listaItens && listaAtualId) {
-        carregarLista(usuario);
-        carregarItens();
-    }
-
-    if (plusBtn) {
-        plusBtn.addEventListener("click", () => {
-            criarLista(usuario);
-        });
-    }
+    carregarLista(usuario);
+    carregarItens();
 
 });
-
-
-// ==========================
-// DASHBOARD - CARREGAR LISTAS
-// ==========================
-
-function carregarListas(usuario) {
-
-    containerListas.innerHTML = "";
-
-    const listasRef = collection(db, "listas");
-
-    const qDono = query(
-        listasRef,
-        where("donoUid", "==", usuario.uid)
-    );
-
-    const qCompartilhadas = query(
-        listasRef,
-        where("colaboradores", "array-contains", usuario.email)
-    );
-
-    onSnapshot(qDono, (snapshotDono) => {
-
-        containerListas.innerHTML = "";
-
-        snapshotDono.forEach((docSnap) => {
-            criarCardLista(docSnap.id, docSnap.data());
-        });
-
-        onSnapshot(qCompartilhadas, (snapshotCompartilhadas) => {
-
-            snapshotCompartilhadas.forEach((docSnap) => {
-                criarCardLista(docSnap.id, docSnap.data());
-            });
-
-        });
-
-    });
-
-}
-
-function criarCardLista(id, lista) {
-
-    const card = document.createElement("div");
-
-    card.className = "lista-card";
-
-    card.innerText = lista.nome;
-
-    card.addEventListener("click", () => {
-
-        localStorage.setItem("listaAtual", id);
-
-        window.location.href = "lista.html";
-
-    });
-
-    containerListas.appendChild(card);
-
-}
-
-
-// ==========================
-// CRIAR LISTA
-// ==========================
-
-async function criarLista(usuario) {
-
-    const docRef = await addDoc(
-        collection(db, "listas"),
-        {
-            nome: "Nova Lista",
-            donoUid: usuario.uid,
-            donoEmail: usuario.email,
-            colaboradores: [],
-            criadaEm: Date.now()
-        }
-    );
-
-    localStorage.setItem("listaAtual", docRef.id);
-
-    window.location.href = "lista.html";
-
-}
-
-
-// ==========================
-// CARREGAR LISTA
-// ==========================
 
 async function carregarLista(usuario) {
 
@@ -168,9 +58,11 @@ async function carregarLista(usuario) {
 
     const lista = listaSnap.data();
 
+    const colaboradores = lista.colaboradores || [];
+
     const temAcesso =
         lista.donoUid === usuario.uid ||
-        lista.colaboradores.includes(usuario.email);
+        colaboradores.includes(usuario.email);
 
     if (!temAcesso) {
         alert("Você não tem acesso a esta lista.");
@@ -191,11 +83,6 @@ async function carregarLista(usuario) {
     carregarColaboradores(listaRef);
 
 }
-
-
-// ==========================
-// ITENS
-// ==========================
 
 function carregarItens() {
 
@@ -261,7 +148,6 @@ function carregarItens() {
 
 }
 
-
 if (addBtn) {
 
     addBtn.addEventListener("click", async () => {
@@ -291,11 +177,6 @@ if (addBtn) {
 
 }
 
-
-// ==========================
-// COMPARTILHAR LISTA
-// ==========================
-
 function carregarColaboradores(listaRef) {
 
     const shareInput = document.querySelector(".share-form input");
@@ -310,7 +191,9 @@ function carregarColaboradores(listaRef) {
 
         usuariosDiv.innerHTML = "";
 
-        lista.colaboradores.forEach((email) => {
+        const colaboradores = lista.colaboradores || [];
+
+        colaboradores.forEach((email) => {
 
             const div = document.createElement("div");
 
@@ -351,23 +234,13 @@ function carregarColaboradores(listaRef) {
 
 }
 
-
-// ==========================
-// VOLTAR
-// ==========================
-
 if (btnVoltar) {
 
     btnVoltar.addEventListener("click", () => {
-        window.location.href = "dashboard.html";
+        window.location.href = "dashboard.html?v=40";
     });
 
 }
-
-
-// ==========================
-// APAGAR LISTA
-// ==========================
 
 if (btnApagarLista) {
 
