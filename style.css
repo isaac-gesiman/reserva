@@ -230,3 +230,105 @@
 .delete:hover{
        transform:scale(1.1);
       }
+
+
+.home-header,
+.home-hero,
+.home-info,
+.home-footer,
+.info-cards,
+.info-card,
+.hero-text,
+.hero-preview,
+.preview-card {
+    box-sizing: border-box;
+}
+
+.home-header {
+    height: 70px;
+    background: #2c0870;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 60px;
+}
+
+.home-header a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.home-hero {
+    min-height: 620px;
+    background: #06122e;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 80px 100px;
+}
+
+.hero-text h1 {
+    font-size: 64px;
+    line-height: 1.1;
+}
+
+.hero-btn {
+    display: inline-block;
+    margin-top: 25px;
+    background: linear-gradient(90deg, #8b3dff, #ff3d7f);
+    color: white;
+    padding: 16px 45px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.hero-preview {
+    position: relative;
+    width: 400px;
+    height: 300px;
+}
+
+.glow {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    background: #2348ff;
+    filter: blur(70px);
+    border-radius: 50%;
+}
+
+.preview-card {
+    position: absolute;
+    top: 120px;
+    right: 100;
+    color: white;
+}
+
+.home-info {
+    background: #2c0870;
+    color: white;
+    text-align: center;
+    padding: 90px 80px;
+}
+
+.info-cards {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    margin-top: 80px;
+}
+
+.info-card {
+    width: 280px;
+    text-align: left;
+}
+
+.home-footer {
+    background: #06122e;
+    color: white;
+    text-align: center;
+    padding: 30px;
+}

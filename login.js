@@ -8,7 +8,7 @@ import {
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    signInWithPopup,
+    signInWithRedirect,
     GoogleAuthProvider
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
@@ -30,55 +30,70 @@ async function salvarUsuario(user) {
     );
 }
 
-if (btnLogin) {
-    btnLogin.addEventListener("click", async () => {
-        const email = emailInput.value.trim();
-        const senha = senhaInput.value.trim();
+function mostrarErro(error) {
+    console.error(error);
 
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+    if (error.code === "auth/invalid-credential") {
+        alert("Email ou senha incorretos. Verifique se essa conta foi criada com Email/Senha.");
+        return;
+    }
 
-            await salvarUsuario(userCredential.user);
+    if (error.code === "auth/email-already-in-use") {
+        alert("Esse email já está cadastrado. Tente entrar ou use Login com Google.");
+        return;
+    }
 
-            window.location.href = "./dashboard.html";
+    if (error.code === "auth/too-many-requests") {
+        alert("Muitas tentativas. Espere alguns minutos e tente novamente.");
+        return;
+    }
 
-        } catch (error) {
-            alert("Erro ao entrar: " + error.code);
-        }
-    });
+    if (error.code === "auth/popup-closed-by-user") {
+        alert("A janela do Google foi fechada antes de concluir o login.");
+        return;
+    }
+
+    alert("Erro: " + error.code);
 }
 
-if (btnCadastro) {
-    btnCadastro.addEventListener("click", async () => {
-        const email = emailInput.value.trim();
-        const senha = senhaInput.value.trim();
+btnLogin.addEventListener("click", async () => {
+    const email = emailInput.value.trim().toLowerCase();
+    const senha = senhaInput.value.trim();
 
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+    if (!email || !senha) {
+        alert("Preencha email e senha.");
+        return;
+    }
 
-            await salvarUsuario(userCredential.user);
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, senha);
 
-            window.location.href = "./dashboard.html";
+        await salvarUsuario(userCredential.user);
 
-        } catch (error) {
-            alert("Erro ao criar conta: " + error.code);
-        }
-    });
-}
+        window.location.href = "./dashboard.html";
 
-if (btnGoogle) {
-    btnGoogle.addEventListener("click", async () => {
-        try {
-            const provider = new GoogleAuthProvider();
+    } catch (error) {
+        mostrarErro(error);
+    }
+});
 
-            const userCredential = await signInWithPopup(auth, provider);
+btnCadastro.addEventListener("click", async () => {
+    const email = emailInput.value.trim().toLowerCase();
+    const senha = senhaInput.value.trim();
 
-            await salvarUsuario(userCredential.user);
+    if (!email || !senha) {
+        alert("Preencha email e senha.");
+        return;
+    }
+});
 
-            window.location.href = "./dashboard.html?v=40";
+btnGoogle.addEventListener("click", async () => {
+    try {
+        const provider = new GoogleAuthProvider();
 
-        } catch (error) {
-            alert("Erro Google: " + error.code);
-        }
-    });
-}
+        await signInWithRedirect(auth, provider);
+
+    } catch (error) {
+        mostrarErro(error);
+    }
+});
